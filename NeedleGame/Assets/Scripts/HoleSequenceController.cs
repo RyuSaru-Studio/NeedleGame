@@ -9,6 +9,8 @@ public class HoleSequenceController : MonoBehaviour
     public TimingPointerSwing timingPointerSwing;
     public StitchingFeedbackLine stitchingFeedbackLine;
     public GameplayUIController gameplayUIController;
+    public ScoreController scoreController;
+    public StarRatingController starRatingController;
     public Transform timingMinigameRoot;
     public bool hideTimingMinigameOnComplete = true;
     public Vector3 timingOffset = new Vector3(0f, 1.2f, 0f);
@@ -90,6 +92,8 @@ public class HoleSequenceController : MonoBehaviour
         ResetTimingSwing();
         ResumeTimingSwing();
         ResetGameplayUI();
+        ResetScore();
+        ResetStars();
         SetTimingInputEnabled(true);
 
         Debug.Log($"Hole {currentHoleIndex + 1}/{holes.Length}");
@@ -110,6 +114,7 @@ public class HoleSequenceController : MonoBehaviour
         SetTimingInputEnabled(false);
         PauseTimingSwing();
         ShowTimingResult(result);
+        AddScoreForTimingResult(result);
         timingResultRoutine = StartCoroutine(HandleTimingResult(result));
     }
 
@@ -205,6 +210,7 @@ public class HoleSequenceController : MonoBehaviour
 
         SetStitchTailVisible(false);
         ShowLevelComplete();
+        ShowStarsForFinalScore();
         OnLevelCompleted?.Invoke();
         Debug.Log("Level complete");
     }
@@ -219,6 +225,40 @@ public class HoleSequenceController : MonoBehaviour
         gameplayUIController.ClearResult();
         gameplayUIController.ShowHint("Click or press Space to stitch");
         UpdateGameplayProgress();
+    }
+
+    private void ResetScore()
+    {
+        if (scoreController != null)
+        {
+            scoreController.ResetScore();
+        }
+    }
+
+    private void AddScoreForTimingResult(TimingResult result)
+    {
+        if (scoreController != null)
+        {
+            scoreController.AddScoreForResult(result);
+        }
+    }
+
+    private void ResetStars()
+    {
+        if (starRatingController != null)
+        {
+            starRatingController.ResetStars();
+        }
+    }
+
+    private void ShowStarsForFinalScore()
+    {
+        if (starRatingController == null || scoreController == null)
+        {
+            return;
+        }
+
+        starRatingController.ShowStarsForScore(scoreController.CurrentScore);
     }
 
     private void ShowTimingResult(TimingResult result)
