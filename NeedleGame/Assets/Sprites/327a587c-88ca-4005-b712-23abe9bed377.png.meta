@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: 940e88b36843e524dbd3be3e01e3eee0
+guid: 060c4dce2602d9e4691aafe3cfc86c22
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8979573015847498966
-    second: pixelneedleNoBackground_0
+      213: 8432252939869199364
+    second: 327a587c-88ca-4005-b712-23abe9bed377_0
+  - first:
+      213: 4298739924479412143
+    second: 327a587c-88ca-4005-b712-23abe9bed377_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +40,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -46,7 +49,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -75,7 +78,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -100,13 +103,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: pixelneedleNoBackground_0
+      name: 327a587c-88ca-4005-b712-23abe9bed377_0
       rect:
         serializedVersion: 2
-        x: 3
-        y: 1
-        width: 13
-        height: 97
+        x: 1188
+        y: 244
+        width: 202
+        height: 501
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +118,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6d4f544051add9c70800000000000000
-      internalID: 8979573015847498966
+      spriteID: 40c95217f51650570800000000000000
+      internalID: 8432252939869199364
       vertices: []
       indices: 
       edges: []
@@ -125,7 +128,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: f64b7506fa1a93646a0520200b5fd70d
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +138,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      pixelneedleNoBackground_0: 8979573015847498966
+      327a587c-88ca-4005-b712-23abe9bed377_0: 8432252939869199364
+      327a587c-88ca-4005-b712-23abe9bed377_1: 4298739924479412143
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

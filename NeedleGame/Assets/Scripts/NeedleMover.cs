@@ -11,6 +11,8 @@ public class NeedleMover : MonoBehaviour
     private Vector3 targetPosition;
     private bool isMoving;
 
+    public event System.Action OnMoveCompleted;
+
     public bool IsMoving
     {
         get { return isMoving; }
@@ -47,6 +49,7 @@ public class NeedleMover : MonoBehaviour
         if (transform.position == targetPosition)
         {
             isMoving = false;
+            OnMoveCompleted?.Invoke();
         }
     }
 

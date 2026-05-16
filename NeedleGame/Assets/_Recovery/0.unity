@@ -263,10 +263,10 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.41960785, g: 0.3019608, b: 0.19215687, a: 1}
+      key0: {r: 0.32941177, g: 0.2392157, b: 0.12941177, a: 1}
       key1: {r: 0.5377358, g: 0.3924596, b: 0.21560162, a: 1}
       key2: {r: 0.32941177, g: 0.2392157, b: 0.12941177, a: 0}
-      key3: {r: 0.41960785, g: 0.3019608, b: 0.19215687, a: 0}
+      key3: {r: 0.5377358, g: 0.3924596, b: 0.21560162, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
       key5: {r: 0, g: 0, b: 0, a: 0}
       key6: {r: 0, g: 0, b: 0, a: 0}
@@ -651,11 +651,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StitchingFeedbackLine
   completedThreadLine: {fileID: 1749303104}
   threadTailLine: {fileID: 252977844}
-  threadColor: {r: 0.41960788, g: 0.3019608, b: 0.19215688, a: 1}
-  completedThreadWidth: 0.05
-  tailThreadWidth: 0.05
-  sortingLayerName: Default
-  sortingOrder: 0
+  lineWidth: 0.05
   zOffset: 0
 --- !u!1 &1103217693
 GameObject:
@@ -1112,10 +1108,10 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.41960785, g: 0.3019608, b: 0.19215687, a: 1}
+      key0: {r: 0.32941177, g: 0.2392157, b: 0.12941177, a: 1}
       key1: {r: 0.5377358, g: 0.3924596, b: 0.21560162, a: 1}
       key2: {r: 0.32941177, g: 0.2392157, b: 0.12941177, a: 0}
-      key3: {r: 0.41960785, g: 0.3019608, b: 0.19215687, a: 0}
+      key3: {r: 0.5377358, g: 0.3924596, b: 0.21560162, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
       key5: {r: 0, g: 0, b: 0, a: 0}
       key6: {r: 0, g: 0, b: 0, a: 0}

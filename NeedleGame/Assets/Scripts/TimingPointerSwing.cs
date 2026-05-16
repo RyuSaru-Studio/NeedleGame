@@ -9,6 +9,7 @@ public class TimingPointerSwing : MonoBehaviour
 
     private float currentAngle;
     private float direction = 1f;
+    private bool isPaused;
 
     public float CurrentAngle
     {
@@ -40,6 +41,12 @@ public class TimingPointerSwing : MonoBehaviour
 
     private void Update()
     {
+        if (isPaused)
+        {
+            UpdatePointerPosition();
+            return;
+        }
+
         if (maxAngle <= minAngle || swingSpeed <= 0f)
         {
             UpdatePointerPosition();
@@ -59,6 +66,23 @@ public class TimingPointerSwing : MonoBehaviour
             direction = 1f;
         }
 
+        UpdatePointerPosition();
+    }
+
+    public void PauseSwing()
+    {
+        isPaused = true;
+    }
+
+    public void ResumeSwing()
+    {
+        isPaused = false;
+    }
+
+    public void ResetSwing()
+    {
+        currentAngle = minAngle;
+        direction = 1f;
         UpdatePointerPosition();
     }
 

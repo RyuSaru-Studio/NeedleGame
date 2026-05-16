@@ -17,6 +17,8 @@ public class TimingEvaluator : MonoBehaviour
 
     public event System.Action<TimingResult> TimingEvaluated;
 
+    private bool inputEnabled = true;
+
     private void OnValidate()
     {
         perfectTolerance = Mathf.Max(0f, perfectTolerance);
@@ -25,10 +27,20 @@ public class TimingEvaluator : MonoBehaviour
 
     private void Update()
     {
+        if (!inputEnabled)
+        {
+            return;
+        }
+
         if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
         {
             EvaluateTiming();
         }
+    }
+
+    public void SetInputEnabled(bool enabled)
+    {
+        inputEnabled = enabled;
     }
 
     private void EvaluateTiming()
@@ -38,6 +50,8 @@ public class TimingEvaluator : MonoBehaviour
             Debug.LogWarning("TimingEvaluator needs a pointer script with a public CurrentAngle property or GetCurrentAngle method.");
             return;
         }
+
+        SetInputEnabled(false);
 
         float distance = Mathf.Abs(currentAngle - targetAngle);
         TimingResult result;

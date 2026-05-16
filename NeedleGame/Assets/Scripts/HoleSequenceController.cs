@@ -1,17 +1,26 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class HoleSequenceController : MonoBehaviour
 {
     public NeedleMover needleMover;
     public TimingEvaluator timingEvaluator;
+    public TimingPointerSwing timingPointerSwing;
+    public StitchingFeedbackLine stitchingFeedbackLine;
+    public GameplayUIController gameplayUIController;
     public Transform timingMinigameRoot;
+    public bool hideTimingMinigameOnComplete = true;
     public Vector3 timingOffset = new Vector3(0f, 1.2f, 0f);
     public float timingRotationOffset = 0f;
+    public float missRetryDelay = 0.25f;
+    public float hitPauseDelay = 0.15f;
     public Transform[] holes;
+    public UnityEvent OnLevelCompleted = new UnityEvent();
 
     private int currentHoleIndex;
-    private bool levelComplete;
+    private bool isLevelComplete;
+    private Coroutine timingResultRoutine;
 
     public Transform CurrentHole
     {
@@ -28,6 +37,8 @@ public class HoleSequenceController : MonoBehaviour
 
     private void OnEnable()
     {
+        SetTimingInputEnabled(false);
+
         if (timingEvaluator != null)
         {
             timingEvaluator.TimingEvaluated += HandleTimingEvaluated;
@@ -36,10 +47,22 @@ public class HoleSequenceController : MonoBehaviour
 
     private void OnDisable()
     {
+        if (timingResultRoutine != null)
+        {
+            StopCoroutine(timingResultRoutine);
+            timingResultRoutine = null;
+        }
+
         if (timingEvaluator != null)
         {
             timingEvaluator.TimingEvaluated -= HandleTimingEvaluated;
         }
+    }
+
+    private void OnValidate()
+    {
+        missRetryDelay = Mathf.Max(0f, missRetryDelay);
+        hitPauseDelay = Mathf.Max(0f, hitPauseDelay);
     }
 
     private IEnumerator Start()
@@ -59,50 +82,249 @@ public class HoleSequenceController : MonoBehaviour
         }
 
         currentHoleIndex = 0;
-        levelComplete = false;
+        isLevelComplete = false;
+        SetTimingMinigameVisible(true);
         needleMover.transform.position = holes[currentHoleIndex].position;
+        ResetStitchingFeedback();
         UpdateTimingMinigameTransform();
+        ResetTimingSwing();
+        ResumeTimingSwing();
+        ResetGameplayUI();
+        SetTimingInputEnabled(true);
 
         Debug.Log($"Hole {currentHoleIndex + 1}/{holes.Length}");
     }
 
     private void HandleTimingEvaluated(TimingResult result)
     {
-        if (levelComplete || needleMover == null || holes == null || holes.Length == 0)
+        if (isLevelComplete || needleMover == null || holes == null || holes.Length == 0)
         {
             return;
         }
 
-        if (result == TimingResult.Miss)
+        if (timingResultRoutine != null)
         {
             return;
+        }
+
+        SetTimingInputEnabled(false);
+        PauseTimingSwing();
+        ShowTimingResult(result);
+        timingResultRoutine = StartCoroutine(HandleTimingResult(result));
+    }
+
+    private IEnumerator HandleTimingResult(TimingResult result)
+    {
+        if (result == TimingResult.Miss)
+        {
+            yield return new WaitForSeconds(missRetryDelay);
+            RestartTimingAtCurrentHole();
+            timingResultRoutine = null;
+            yield break;
+        }
+
+        yield return new WaitForSeconds(hitPauseDelay);
+
+        if (isLevelComplete)
+        {
+            timingResultRoutine = null;
+            yield break;
         }
 
         int nextHoleIndex = currentHoleIndex + 1;
-
         if (nextHoleIndex >= holes.Length)
         {
-            levelComplete = true;
-            Debug.Log("Level complete");
-            return;
+            AddStitchPoint(holes[currentHoleIndex].position);
+            CompleteLevel();
+            timingResultRoutine = null;
+            yield break;
         }
 
         if (holes[nextHoleIndex] == null)
         {
             Debug.LogWarning($"Hole {nextHoleIndex + 1} is missing.");
-            return;
+            RestartTimingAtCurrentHole();
+            timingResultRoutine = null;
+            yield break;
         }
 
         currentHoleIndex = nextHoleIndex;
-        needleMover.MoveTo(holes[currentHoleIndex].position);
         UpdateTimingMinigameTransform();
+        UpdateGameplayProgress();
+        SetStitchTailVisible(true);
+        needleMover.MoveTo(holes[currentHoleIndex].position);
 
         Debug.Log($"Hole {currentHoleIndex + 1}/{holes.Length}");
+
+        while (needleMover.IsMoving)
+        {
+            if (isLevelComplete)
+            {
+                timingResultRoutine = null;
+                yield break;
+            }
+
+            UpdateStitchTail();
+            yield return null;
+        }
+
+        AddStitchPoint(holes[currentHoleIndex].position);
+        UpdateStitchTail();
+        RestartTimingAtCurrentHole();
+        timingResultRoutine = null;
+    }
+
+    private void RestartTimingAtCurrentHole()
+    {
+        if (isLevelComplete)
+        {
+            return;
+        }
+
+        UpdateTimingMinigameTransform();
+        ResetTimingSwing();
+        ResumeTimingSwing();
+        SetTimingInputEnabled(true);
+    }
+
+    private void CompleteLevel()
+    {
+        if (isLevelComplete)
+        {
+            return;
+        }
+
+        isLevelComplete = true;
+        SetTimingInputEnabled(false);
+        PauseTimingSwing();
+
+        if (hideTimingMinigameOnComplete)
+        {
+            SetTimingMinigameVisible(false);
+        }
+
+        SetStitchTailVisible(false);
+        ShowLevelComplete();
+        OnLevelCompleted?.Invoke();
+        Debug.Log("Level complete");
+    }
+
+    private void ResetGameplayUI()
+    {
+        if (gameplayUIController == null)
+        {
+            return;
+        }
+
+        gameplayUIController.ClearResult();
+        gameplayUIController.ShowHint("Click or press Space to stitch");
+        UpdateGameplayProgress();
+    }
+
+    private void ShowTimingResult(TimingResult result)
+    {
+        if (gameplayUIController != null)
+        {
+            gameplayUIController.ShowResult(result);
+        }
+    }
+
+    private void UpdateGameplayProgress()
+    {
+        if (gameplayUIController != null)
+        {
+            gameplayUIController.UpdateProgress(currentHoleIndex, holes.Length);
+        }
+    }
+
+    private void ShowLevelComplete()
+    {
+        if (gameplayUIController != null)
+        {
+            gameplayUIController.ShowLevelComplete();
+        }
+    }
+
+    private void ResetStitchingFeedback()
+    {
+        if (stitchingFeedbackLine == null)
+        {
+            return;
+        }
+
+        stitchingFeedbackLine.ResetThread();
+        stitchingFeedbackLine.SetNeedleTransform(needleMover.transform);
+        stitchingFeedbackLine.AddStitchPoint(holes[currentHoleIndex].position);
+        stitchingFeedbackLine.SetTailVisible(true);
+    }
+
+    private void AddStitchPoint(Vector3 worldPosition)
+    {
+        if (stitchingFeedbackLine != null)
+        {
+            stitchingFeedbackLine.AddStitchPoint(worldPosition);
+        }
+    }
+
+    private void SetStitchTailVisible(bool visible)
+    {
+        if (stitchingFeedbackLine != null)
+        {
+            stitchingFeedbackLine.SetTailVisible(visible);
+        }
+    }
+
+    private void UpdateStitchTail()
+    {
+        if (stitchingFeedbackLine != null)
+        {
+            stitchingFeedbackLine.UpdateTailToNeedle();
+        }
+    }
+
+    private void SetTimingMinigameVisible(bool visible)
+    {
+        if (timingMinigameRoot != null)
+        {
+            timingMinigameRoot.gameObject.SetActive(visible);
+        }
+    }
+
+    private void SetTimingInputEnabled(bool enabled)
+    {
+        if (timingEvaluator != null)
+        {
+            timingEvaluator.SetInputEnabled(enabled);
+        }
+    }
+
+    private void PauseTimingSwing()
+    {
+        if (timingPointerSwing != null)
+        {
+            timingPointerSwing.PauseSwing();
+        }
+    }
+
+    private void ResumeTimingSwing()
+    {
+        if (timingPointerSwing != null)
+        {
+            timingPointerSwing.ResumeSwing();
+        }
+    }
+
+    private void ResetTimingSwing()
+    {
+        if (timingPointerSwing != null)
+        {
+            timingPointerSwing.ResetSwing();
+        }
     }
 
     private void UpdateTimingMinigameTransform()
     {
-        if (timingMinigameRoot == null || holes[currentHoleIndex] == null)
+        if (isLevelComplete || timingMinigameRoot == null || holes[currentHoleIndex] == null)
         {
             return;
         }
