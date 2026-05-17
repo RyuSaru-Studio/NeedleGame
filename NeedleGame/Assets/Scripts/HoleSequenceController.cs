@@ -9,13 +9,14 @@ public class HoleSequenceController : MonoBehaviour
     public TimingPointerSwing timingPointerSwing;
     public StitchingFeedbackLine stitchingFeedbackLine;
     public GameplayUIController gameplayUIController;
+    public RestartController restartController;
     public ScoreController scoreController;
     public StarRatingController starRatingController;
     public Transform timingMinigameRoot;
     public bool hideTimingMinigameOnComplete = true;
     public Vector3 timingOffset = new Vector3(0f, 1.2f, 0f);
     public float timingRotationOffset = 0f;
-    public float missRetryDelay = 0.25f;
+    public float missRestartDelay = 0.5f;
     public float hitPauseDelay = 0.15f;
     public Transform[] holes;
     public UnityEvent OnLevelCompleted = new UnityEvent();
@@ -63,7 +64,7 @@ public class HoleSequenceController : MonoBehaviour
 
     private void OnValidate()
     {
-        missRetryDelay = Mathf.Max(0f, missRetryDelay);
+        missRestartDelay = Mathf.Max(0f, missRestartDelay);
         hitPauseDelay = Mathf.Max(0f, hitPauseDelay);
     }
 
@@ -91,8 +92,11 @@ public class HoleSequenceController : MonoBehaviour
         UpdateTimingMinigameTransform();
         ResetTimingSwing();
         ResumeTimingSwing();
+        AudioManager.Instance?.PlayTimingStart();
         ResetGameplayUI();
         ResetScore();
+        // Set the maximum possible score based on number of holes
+        scoreController.SetMaximumScore(holes.Length);
         ResetStars();
         SetTimingInputEnabled(true);
 
@@ -114,20 +118,27 @@ public class HoleSequenceController : MonoBehaviour
         SetTimingInputEnabled(false);
         PauseTimingSwing();
         ShowTimingResult(result);
+        AudioManager.Instance?.PlayHitResult(result);
+
+        if (result == TimingResult.Miss)
+        {
+            // Reset live stars when the player misses
+            if (gameplayUIController != null)
+                gameplayUIController.ResetStarDisplay();
+
+            if (starRatingController != null)
+                starRatingController.ResetStars();
+
+            timingResultRoutine = StartCoroutine(RestartLevelAfterMiss());
+            return;
+        }
+
         AddScoreForTimingResult(result);
         timingResultRoutine = StartCoroutine(HandleTimingResult(result));
     }
 
     private IEnumerator HandleTimingResult(TimingResult result)
     {
-        if (result == TimingResult.Miss)
-        {
-            yield return new WaitForSeconds(missRetryDelay);
-            RestartTimingAtCurrentHole();
-            timingResultRoutine = null;
-            yield break;
-        }
-
         yield return new WaitForSeconds(hitPauseDelay);
 
         if (isLevelComplete)
@@ -179,6 +190,22 @@ public class HoleSequenceController : MonoBehaviour
         timingResultRoutine = null;
     }
 
+    private IEnumerator RestartLevelAfterMiss()
+    {
+        yield return new WaitForSeconds(missRestartDelay);
+
+        if (restartController != null)
+        {
+            restartController.RestartCurrentScene();
+        }
+        else
+        {
+            Debug.LogWarning("HoleSequenceController needs a RestartController reference to restart after a miss.");
+        }
+
+        timingResultRoutine = null;
+    }
+
     private void RestartTimingAtCurrentHole()
     {
         if (isLevelComplete)
@@ -189,6 +216,7 @@ public class HoleSequenceController : MonoBehaviour
         UpdateTimingMinigameTransform();
         ResetTimingSwing();
         ResumeTimingSwing();
+        AudioManager.Instance?.PlayTimingStart();
         SetTimingInputEnabled(true);
     }
 
@@ -211,6 +239,7 @@ public class HoleSequenceController : MonoBehaviour
         SetStitchTailVisible(false);
         ShowLevelComplete();
         ShowStarsForFinalScore();
+        AudioManager.Instance?.PlaySFX(AudioManager.Instance.levelComplete);
         OnLevelCompleted?.Invoke();
         Debug.Log("Level complete");
     }
@@ -240,6 +269,12 @@ public class HoleSequenceController : MonoBehaviour
         if (scoreController != null)
         {
             scoreController.AddScoreForResult(result);
+            // Update live star display
+starRatingController.UpdateStarsFromScore();
+if (gameplayUIController != null)
+{
+    gameplayUIController.UpdateLiveStarDisplay(starRatingController.CurrentStarCount);
+}
         }
     }
 
@@ -344,6 +379,7 @@ public class HoleSequenceController : MonoBehaviour
         {
             timingPointerSwing.PauseSwing();
         }
+        AudioManager.Instance?.StopLoop();
     }
 
     private void ResumeTimingSwing()
@@ -352,6 +388,7 @@ public class HoleSequenceController : MonoBehaviour
         {
             timingPointerSwing.ResumeSwing();
         }
+        AudioManager.Instance?.PlayLoop(AudioManager.Instance.timingSwingLoop);
     }
 
     private void ResetTimingSwing()

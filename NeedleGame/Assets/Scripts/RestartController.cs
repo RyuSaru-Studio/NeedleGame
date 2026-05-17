@@ -14,7 +14,17 @@ public class RestartController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            RestartCurrentScene();
         }
+    }
+
+    public void RestartCurrentScene()
+    {
+        if (!restartEnabled)
+        {
+            return;
+        }
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

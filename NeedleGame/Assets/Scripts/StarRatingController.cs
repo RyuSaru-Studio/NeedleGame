@@ -5,40 +5,38 @@ public class StarRatingController : MonoBehaviour
 {
     public ScoreController scoreController;
     public TextMeshProUGUI starsText;
-    public int oneStarThreshold = 150;
-    public int twoStarThreshold = 250;
-    public int threeStarThreshold = 350;
 
     private int currentStarCount;
+    private int displayedStarCount; // For UI animation
 
     public int CurrentStarCount => currentStarCount;
-
-    private void OnValidate()
-    {
-        oneStarThreshold = Mathf.Max(0, oneStarThreshold);
-        twoStarThreshold = Mathf.Max(oneStarThreshold, twoStarThreshold);
-        threeStarThreshold = Mathf.Max(twoStarThreshold, threeStarThreshold);
-    }
 
     public void ResetStars()
     {
         currentStarCount = 0;
+        displayedStarCount = 0;
         UpdateStarsText();
     }
 
-    public int CalculateStars(int score)
+    /// <summary>
+    /// Calculates stars based on percentage of perfect actions.
+    /// 100% = 3 stars
+    /// 70% to 99.9% = 2 stars
+    /// Below 70% = 1 star
+    /// </summary>
+    public int CalculateStarsByPercentage(float percentage)
     {
-        if (score >= threeStarThreshold)
+        if (percentage >= 100f)
         {
             return 3;
         }
 
-        if (score >= twoStarThreshold)
+        if (percentage >= 70f)
         {
             return 2;
         }
 
-        if (score >= oneStarThreshold)
+        if (percentage >= 1f) // At least some points
         {
             return 1;
         }
@@ -46,9 +44,24 @@ public class StarRatingController : MonoBehaviour
         return 0;
     }
 
+    /// <summary>
+    /// Updates current star count based on the current score.
+    /// </summary>
+    public void UpdateStarsFromScore()
+    {
+        if (scoreController == null)
+        {
+            return;
+        }
+
+        float percentage = scoreController.GetScorePercentage();
+        currentStarCount = CalculateStarsByPercentage(percentage);
+        UpdateStarsText();
+    }
+
     public void ShowStarsForScore(int score)
     {
-        currentStarCount = CalculateStars(score);
+        currentStarCount = CalculateStarsByPercentage((score / (float)scoreController.MaximumPossibleScore) * 100f);
         UpdateStarsText();
     }
 
@@ -66,19 +79,19 @@ public class StarRatingController : MonoBehaviour
 
         if (currentStarCount == 3)
         {
-            starsText.text = "\u2605\u2605\u2605";
+            starsText.text = "★★★";
         }
         else if (currentStarCount == 2)
         {
-            starsText.text = "\u2605\u2605\u2606";
+            starsText.text = "★★☆";
         }
         else if (currentStarCount == 1)
         {
-            starsText.text = "\u2605\u2606\u2606";
+            starsText.text = "★☆☆";
         }
         else
         {
-            starsText.text = "\u2606\u2606\u2606";
+            starsText.text = "☆☆☆";
         }
     }
 }

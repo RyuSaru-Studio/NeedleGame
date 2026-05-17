@@ -6,6 +6,7 @@ public class GameplayUIController : MonoBehaviour
     public TextMeshProUGUI resultText;
     public TextMeshProUGUI progressText;
     public TextMeshProUGUI hintText;
+    public StarDisplayUI starDisplayUI;
 
     public void ShowResult(TimingResult result)
     {
@@ -50,10 +51,12 @@ public class GameplayUIController : MonoBehaviour
 
     public void ShowHint(string message)
     {
-        if (hintText != null)
+        if (hintText == null)
         {
-            hintText.text = message;
+            return;
         }
+
+        hintText.text = message;
     }
 
     public void ClearResult()
@@ -61,6 +64,29 @@ public class GameplayUIController : MonoBehaviour
         if (resultText != null)
         {
             resultText.text = "";
+        }
+    }
+
+    /// <summary>
+    /// Updates the live star display during gameplay.
+    /// </summary>
+    public void UpdateLiveStarDisplay(int earnedStars)
+    {
+        if (starDisplayUI != null)
+        {
+            Debug.Log($"GameplayUIController.UpdateLiveStarDisplay: earnedStars={earnedStars}");
+            starDisplayUI.UpdateStarDisplay(earnedStars);
+        }
+    }
+
+    /// <summary>
+    /// Resets the star display (called when player misses).
+    /// </summary>
+    public void ResetStarDisplay()
+    {
+        if (starDisplayUI != null)
+        {
+            starDisplayUI.ResetStarDisplay();
         }
     }
 }

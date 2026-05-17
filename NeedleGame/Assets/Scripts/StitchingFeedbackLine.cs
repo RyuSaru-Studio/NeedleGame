@@ -92,6 +92,41 @@ public class StitchingFeedbackLine : MonoBehaviour
         }
     }
 
+    public void RebuildCompletedThreadFromTransforms(IList<Transform> pointTransforms)
+    {
+        InitializeLineRenderers();
+
+        stitchPoints.Clear();
+
+        if (completedThreadLine == null)
+        {
+            return;
+        }
+
+        if (pointTransforms == null)
+        {
+            completedThreadLine.positionCount = 0;
+            return;
+        }
+
+        for (int i = 0; i < pointTransforms.Count; i++)
+        {
+            if (pointTransforms[i] != null)
+            {
+                stitchPoints.Add(ApplyZOffset(pointTransforms[i].position));
+            }
+        }
+
+        completedThreadLine.positionCount = stitchPoints.Count;
+
+        for (int i = 0; i < stitchPoints.Count; i++)
+        {
+            completedThreadLine.SetPosition(i, stitchPoints[i]);
+        }
+
+        UpdateTailToNeedle();
+    }
+
     public void SetNeedleTransform(Transform needle)
     {
         needleTransform = needle;

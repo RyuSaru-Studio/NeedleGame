@@ -215,9 +215,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scoreController: {fileID: 776001000000000003}
   starsText: {fileID: 0}
-  oneStarThreshold: 150
-  twoStarThreshold: 250
-  threeStarThreshold: 350
 --- !u!1 &943213465496377916
 GameObject:
   m_ObjectHideFlags: 0
@@ -1809,13 +1806,14 @@ MonoBehaviour:
   timingPointerSwing: {fileID: 0}
   stitchingFeedbackLine: {fileID: 0}
   gameplayUIController: {fileID: 0}
+  restartController: {fileID: 0}
   scoreController: {fileID: 776001000000000003}
   starRatingController: {fileID: 776002000000000003}
   timingMinigameRoot: {fileID: 6290039480730669511}
   hideTimingMinigameOnComplete: 1
   timingOffset: {x: 0, y: 0.2, z: 0}
   timingRotationOffset: 0
-  missRetryDelay: 0.25
+  missRestartDelay: 0.5
   hitPauseDelay: 0.15
   holes:
   - {fileID: 5288113070603198367}

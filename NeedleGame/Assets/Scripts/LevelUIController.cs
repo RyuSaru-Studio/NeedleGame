@@ -99,12 +99,14 @@ public class LevelUIController : MonoBehaviour
 
     public void RestartLevel()
     {
+        AudioManager.Instance?.PlayClick();
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void GoToLevelMenu()
     {
+        AudioManager.Instance?.PlayClick();
         Time.timeScale = 1f;
 
         PlayerPrefs.SetInt("OpenLevelMenuOnStart", 1);
@@ -126,6 +128,7 @@ public class LevelUIController : MonoBehaviour
 
     public void LoadNextLevel()
     {
+        AudioManager.Instance?.PlayClick();
         Time.timeScale = 1f;
         SceneManager.LoadScene(nextLevelName);
     }
